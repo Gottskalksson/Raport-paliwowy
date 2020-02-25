@@ -95,7 +95,7 @@ public class UserDao {
         return user;
     }
 
-    public User authorizeAdmin(String name, String plainTextPassword) {
+    public User authorizeUser(String name, String plainTextPassword) {
         User user = new User();
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(CHECK_IF_USER_EXISTS)) {
