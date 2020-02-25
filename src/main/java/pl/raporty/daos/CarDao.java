@@ -13,17 +13,18 @@ public class CarDao {
     private static final String CREATE_CAR_QUERY =
             "INSERT INTO cars (car_number, mark, model, fuel_type, year_production, owner_id) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String READ_CAR_QUERY =
-            "SELECT * FROM users WHERE car_id = ?";
+            "SELECT * FROM cars WHERE car_id = ?";
     private static final String UPDATE_CAR_QUERY =
-            "UPDATE users SET car_number = ?, mark = ?, model = ?, fuel_type = ?, year_production = ?, owner_id = ? WHERE car_id = ?";
+            "UPDATE cars SET car_number = ?, mark = ?, model = ?, fuel_type = ?, year_production = ?, owner_id = ? WHERE car_id = ?";
     private static final String DELETE_CAR_QUERY =
-            "DELETE FROM users WHERE car_id = ?";
+            "DELETE FROM cars WHERE car_id = ?";
 
     public Car create (Car car) {
         try (Connection conn = DbUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(CREATE_CAR_QUERY,
                      PreparedStatement.RETURN_GENERATED_KEYS)) {
             setCarsParams(car, statement);
+
             int result = statement.executeUpdate();
 
             if (result != 1) {
