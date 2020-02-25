@@ -1,5 +1,6 @@
 package pl.raporty.daos;
 
+import org.mindrot.jbcrypt.BCrypt;
 import pl.raporty.DBUtil.DbUtil;
 import pl.raporty.models.User;
 
@@ -17,6 +18,9 @@ public class UserDao {
             "UPDATE users SET user_name = ?, password = ? WHERE user_id = ?";
     private static final String DELETE_USER_QUERY =
             "DELETE FROM users WHERE user_id = ?";
+    private static final String CHECK_IF_USER_EXISTS =
+            "SELECT * FROM users WHERE user_name = ?";
+
 
     public User create (User user) {
         try (Connection conn = DbUtil.getConnection();
@@ -90,6 +94,27 @@ public class UserDao {
         }
         return user;
     }
+
+    public User authorizeAdmin(String name, String plainTextPassword) {
+        User user = new User();
+        try (Connection connection = DbUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_IF_USER_EXISTS)) {
+            statement.setString(1, name);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                user.setName(resultSet.getString("user_name"));
+                user.setPassword(resultSet.getString("password"));
+                String hashedPassword = user.getPassword();
+                if (BCrypt.checkpw(plainTextPassword, hashedPassword)) {
+                    return user;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
 
 }
