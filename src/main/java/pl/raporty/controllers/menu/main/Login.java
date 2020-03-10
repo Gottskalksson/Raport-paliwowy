@@ -23,7 +23,7 @@ public class Login extends HttpServlet {
 
         if (user != null) {
             session.setAttribute("login", user);
-            response.sendRedirect("/app/index");
+            response.sendRedirect("/app/index.jsp");
         } else {
             getServletContext().getRequestDispatcher("/login.jsp").forward(request, response);
         }
@@ -34,7 +34,7 @@ public class Login extends HttpServlet {
         User user = (User) session.getAttribute("login");
 
         if (user != null) {
-            response.sendRedirect("/app/index");
+            response.sendRedirect("/app/index.jsp");
         } else {
             getServletContext().getRequestDispatcher("/login.jsp").forward(request, response);
         }

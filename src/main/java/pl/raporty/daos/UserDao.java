@@ -8,6 +8,7 @@ import javax.ws.rs.NotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserDao {
     private static final String CREATE_USER_QUERY =
@@ -26,31 +27,27 @@ public class UserDao {
         try (Connection conn = DbUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(CREATE_USER_QUERY,
                      PreparedStatement.RETURN_GENERATED_KEYS)) {
+            changeDb(conn);
             statement.setString(1, user.getName());
             statement.setString(2, user.getPassword());
-            int result = statement.executeUpdate();
-
-            if (result != 1) {
-                throw new RuntimeException("Execute update returned " + result);
-            }
-
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.first()) {
-                    user.setId(generatedKeys.getInt(1));
-                    return user;
-                } else {
-                    throw new RuntimeException("Generated kay was now found");
+            statement.executeUpdate();
+            
+            ResultSet resultSet = statement.getGeneratedKeys();
+                if (resultSet.next()) {
+                    user.setId(resultSet.getInt(1));
                 }
-            }
+                return user;
+
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public void delete(Integer userId) {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(DELETE_USER_QUERY)) {
+            changeDb(connection);
             statement.setInt(1, userId);
             statement.executeUpdate();
 
@@ -66,6 +63,7 @@ public class UserDao {
     public void update (User user) {
         try (Connection conn = DbUtil.getConnection();
         PreparedStatement statement = conn.prepareStatement(UPDATE_USER_QUERY)) {
+            changeDb(conn);
             statement.setInt(3, user.getId());
             statement.setString(1, user.getName());
             statement.setString(2, user.getPassword());
@@ -81,6 +79,7 @@ public class UserDao {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(READ_USER_QUERY);
         ) {
+            changeDb(connection);
             statement.setInt(1, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -99,6 +98,7 @@ public class UserDao {
         User user = new User();
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(CHECK_IF_USER_EXISTS)) {
+            changeDb(connection);
             statement.setString(1, name);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -115,6 +115,10 @@ public class UserDao {
         return null;
     }
 
+    private void changeDb(Connection conn) throws SQLException {
+        PreparedStatement changeDb = conn.prepareStatement("USE petrol");
+        ResultSet setDb = changeDb.executeQuery();
+    }
 
 
 }
